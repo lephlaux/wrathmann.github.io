@@ -4,6 +4,10 @@ usingmathjax: true
 theme: minia
 ---
 
+{% if page.usingmathjax %}
+{% include mathjax.html %}
+{% endif %}
+
 # JSXGraph and derivatives
 
 ##  Idea
@@ -21,4 +25,3 @@ The ideas where shown in the talk of Meike Akveld and Wigand Rathmann at the Int
 Here more examples demonstrating derivatives will be found here.
 
 - [Grandient and constraints](./Implicit-lagrange.html) to demonstrate the idea of Karush-Kuhn-Tucker points
-

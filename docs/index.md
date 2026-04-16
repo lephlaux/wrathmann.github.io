@@ -4,6 +4,10 @@ usingmathjax: true
 theme: minima
 ---
 
+{% if page.usingmathjax %}
+{% include mathjax.html %}
+{% endif %}
+
 # JSXGraph Example collection
 
 ## Calculus (univariate)
@@ -124,13 +128,12 @@ The links will direct to the IDIAM page.
 + [Spherical coordinates](https://idiamath.github.io/JSXGraphExamples/SphericalCoordinatesWithCuttingPlane.html) One set is hard coded in the applet, now try to fit the other on. 
 
 ## Vector Fields
-+ [Slope Field](https://idiamath.github.io/JSXGraphExamples/slopefield-plot-input.html) Slopefield of a function $$f:\mathbb{R}^2\to\mathbb{R}$$ like $$y'(x)=f(x,y)$$ is plotted, a trajectory thru $$(x,_0,y_0)$$ is plotted. The function can be modified by an input field.
-+ [Vector Field 2d](https://idiamath.github.io/JSXGraphExamples/vectorfield-plot-input.html) given by a function $$V:\mathbb{R}^2\to\mathbb{R}^2$$, a trajectory thru $$(x,_0,y_0)$$ is plotted. The vector field can be modified by an input field.
-+ [Vector Field 3d](https://idiamath.github.io/JSXGraphExamples/vectorfield3D-plot-input.html) given by a function $$V:\mathbb{R}^3\to\mathbb{R}^3$$, a trajectory thru $$(x,_0,y_0)$$ is plotted. The components of vector field can be modified by input boxes.
++ [Slope Field](https://idiamath.github.io/JSXGraphExamples/slopefield-plot-input.html) Slopefield of a function $$f:\mathbb{R}^2\to\mathbb{R}$$ like $$y'(x)=f(x,y)$$ is plotted, a trajectory thru $$(x_0,y_0)$$ is plotted. The function can be modified by an input field.
++ [Vector Field 2d](https://idiamath.github.io/JSXGraphExamples/vectorfield-plot-input.html) given by a function $$V:\mathbb{R}^2\to\mathbb{R}^2$$ a trajectory thru $$(x_0,y_0)$$ is plotted. The vector field can be modified by an input field.
++ [Vector Field 3d](https://idiamath.github.io/JSXGraphExamples/vectorfield3D-plot-input.html) given by a function $$V:\mathbb{R}^3\to\mathbb{R}^3$$ a trajectory thru $$(x_0,y_0)$$ is plotted. The components of vector field can be modified by input boxes.
 + [Vector Field 3d and curl](https://idiamath.github.io/JSXGraphExamples/vectorfield3D-rot-input.html) given by a function $$V:\mathbb{R}^3\to\mathbb{R}^3$$ the curl $$\nabla\times V$$ is computed and shown. The components of vector field can be modified by input boxes.
 + [Vector Field 3d at function plot](https://idiamath.github.io/JSXGraphExamples/vectorfield3D-functionplot-input.html)  Given a function $$f:\mathbb{R}^2\to\mathbb{R}$$ and the vectorfield $$V:\mathbb{R}^3\to\mathbb{R}^3$$, the vectofield is plotted at the graph of the function $$f$$.
-+ [Vector Field 3d at surface](https://idiamath.github.io/JSXGraphExamples/vectorfield3D-surface-input.html) Surface given by a function $$s:[-1,1]^2\to\mathbb{R}^3$$ and the vectorfield $$V:\mathbb{R}^3\to\mathbb{R}^3$$, the vectofield is plotted at the surface.
-+ [Vector Field 3d at curve](https://idiamath.github.io/JSXGraphExamples/vectorfield3D-curve-input.html) Curve given by a function $$c:[-1,1]\to\mathbb{R}^3$$ and the vectorfield $$V:\mathbb{R}^3\to\mathbb{R}^3$$, the vectorfield is plotted at the curve.
++ [Vector Field 3d at surface](https://idiamath.github.io/JSXGraphExamples/vectorfield3D-surface-input.html) Surface given by a function $$s:[-1,1]^2\to\mathbb{R}^3$$ and the vectorfield $$V:\mathbb{R}^3\to\mathbb{R}^3$$ the vectofield is plotted at the surface.
++ [Vector Field 3d at curve](https://idiamath.github.io/JSXGraphExamples/vectorfield3D-curve-input.html) Curve given by a function $$c:[-1,1]\to\mathbb{R}^3$$ and the vectorfield $$V:\mathbb{R}^3\to\mathbb{R}^3$$ the vectorfield is plotted at the curve.
 + [Vector Field 3d with slider](https://idiamath.github.io/JSXGraphExamples/vectorfield3D-curve-slider.html) Curve can be manipulated by sliders, the vectorfield as well. Both is hard coded in the applet.
-
 
