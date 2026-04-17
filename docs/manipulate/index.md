@@ -4,6 +4,10 @@ usingmathjax: true
 theme: minia
 ---
 
+{% if page.usingmathjax %}
+{% include mathjax.html %}
+{% endif %}
+
 # JSXGraph Example JessieCode
 
 ##  Symbolic Differentiation
@@ -13,4 +17,3 @@ In these examples the function `js.manipulate` was used to the derivatives in a 
 - [Taylor polynomial](./Symbolic-TaylorPolynomial.html)
 - [Curl of a vector field](./Symbolic-vectorfield3D-rot-input.html)
 - [Orbitals of H atom](./Symbolic-Orbitale.html)
-
