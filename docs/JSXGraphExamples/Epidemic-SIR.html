@@ -38,6 +38,10 @@
       margin: 0 0 10px 0;
     }
 
+    .sir-math {
+      white-space: nowrap;
+    }
+
     .sir-row {
       display: grid;
       grid-template-columns: 60px 1fr 90px;
@@ -98,41 +102,41 @@
       <h2>Parameters</h2>
 
       <div class="sir-row">
-        <label for="alphaRange">α</label>
+        <label for="alphaRange"><span class="sir-math">\\(\\alpha\\)</span></label>
         <input id="alphaRange" type="range" min="0" max="0.01" step="0.0001" value="0.0005">
         <output id="alphaVal"></output>
       </div>
       <div class="sir-row">
-        <label for="betaRange">β</label>
+        <label for="betaRange"><span class="sir-math">\\(\\beta\\)</span></label>
         <input id="betaRange" type="range" min="0" max="2" step="0.01" value="0.10">
         <output id="betaVal"></output>
       </div>
 
       <h2 style="margin-top:14px;">Initial values</h2>
       <div class="sir-row">
-        <label for="S0Input">S₀</label>
+        <label for="S0Range"><span class="sir-math">\\(S_0\\)</span></label>
         <input id="S0Range" type="range" min="0" max="20000" step="1" value="999">
         <output id="S0Val"></output>
       </div>
       <div class="sir-row">
-        <label for="I0Range">I₀</label>
+        <label for="I0Range"><span class="sir-math">\\(I_0\\)</span></label>
         <input id="I0Range" type="range" min="0" max="20000" step="1" value="1">
         <output id="I0Val"></output>
       </div>
       <div class="sir-row">
-        <label for="R0Range">R₀</label>
+        <label for="R0Range"><span class="sir-math">\\(R_0\\)</span></label>
         <input id="R0Range" type="range" min="0" max="20000" step="1" value="0">
         <output id="R0Val"></output>
       </div>
 
       <h2 style="margin-top:14px;">Simulation</h2>
       <div class="sir-row">
-        <label for="TInput">T</label>
+        <label for="TRange"><span class="sir-math">\\(T\\)</span></label>
         <input id="TRange" type="range" min="1" max="365" step="1" value="160">
         <output id="TVal"></output>
       </div>
       <div class="sir-row">
-        <label for="NstInput">Nₛₜ</label>
+        <label for="NstRange"><span class="sir-math">\\(N_{st}\\)</span></label>
         <input id="NstRange" type="range" min="10" max="10000" step="10" value="4000">
         <output id="NstVal"></output>
       </div>
@@ -401,6 +405,11 @@
     init();
     wireControls();
     plot();
+
+    // Typeset MathJax inside the control panel labels (MathJax is loaded async).
+    if (window.MathJax && MathJax.startup && MathJax.startup.promise) {
+      MathJax.startup.promise.then(function () { return MathJax.typesetPromise(); });
+    }
   </script>
 </body>
 
