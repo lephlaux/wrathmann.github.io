@@ -1,0 +1,264 @@
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width">
+  <script type="text/javascript" charset="UTF-8"
+    src="https://cdn.jsdelivr.net/npm/jsxgraph/distrib/jsxgraphcore.js"></script>
+  <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/jsxgraph/distrib/jsxgraph.css" />
+
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+  </script>
+  <style>
+    body {
+      font-family: sans-serif;
+    }
+  </style>
+
+  <title>SIR Epidemic Model</title>
+</head>
+
+<body>
+  <h1>SIR Epidemic Model</h1>
+  <p>
+    We visualize the SIR system
+    \[
+    \begin{aligned}
+    S'(t) &= -\alpha\,S(t)\,I(t),\\
+    I'(t) &= \alpha\,S(t)\,I(t)-\beta\,I(t),\\
+    R'(t) &= \beta\,I(t),
+    \end{aligned}
+    \]
+    and additionally \(N(t):=S(t)+I(t)+R(t)\).
+  </p>
+
+  <div id="jxgboxPhase" class="jxgbox" style="width:600px; height:600px; float:left"></div>
+  <div id="jxgboxTime" class="jxgbox" style="width:700px; height:600px;"></div>
+  <br clear="all">
+
+  <script language="JavaScript">
+    JXG.Options.text.useMathJax = true;
+
+    var boardPhase, boardTime;
+    var alphaSlider, betaSlider;
+    var inputS0, inputI0, inputR0;
+    var inputT, inputNst, inputH;
+    var btnSim;
+
+    var curvePhase, curveS, curveI, curveR, curveN;
+    var sim = { t: [], S: [], I: [], R: [], N: [] };
+
+    function parseNumber(value, fallback) {
+      var n = Number(value);
+      return Number.isFinite(n) ? n : fallback;
+    }
+
+    function parseIntNumber(value, fallback) {
+      var n = parseInt(value, 10);
+      return Number.isFinite(n) ? n : fallback;
+    }
+
+    function setInputValue(inputEl, value) {
+      if (inputEl && inputEl.rendNodeInput) {
+        inputEl.rendNodeInput.value = String(value);
+      }
+    }
+
+    function readParams() {
+      var alpha = alphaSlider.Value();
+      var beta = betaSlider.Value();
+
+      var S0 = parseNumber(inputS0.Value(), 999);
+      var I0 = parseNumber(inputI0.Value(), 1);
+      var R0 = parseNumber(inputR0.Value(), 0);
+
+      if (S0 < 0) S0 = 0;
+      if (I0 < 0) I0 = 0;
+      if (R0 < 0) R0 = 0;
+
+      var T = parseNumber(inputT.Value(), 160);
+      if (T <= 0) T = 160;
+
+      var Nst = parseIntNumber(inputNst.Value(), 4000);
+      if (Nst < 10) Nst = 10;
+
+      var hUser = parseNumber(inputH.Value(), NaN);
+      if (Number.isFinite(hUser) && hUser > 0) {
+        Nst = Math.max(10, Math.round(T / hUser));
+        setInputValue(inputNst, Nst);
+      }
+
+      var h = T / Nst;
+      setInputValue(inputH, h.toPrecision(6));
+
+      return { alpha: alpha, beta: beta, S0: S0, I0: I0, R0: R0, T: T, Nst: Nst, h: h };
+    }
+
+    function computeSimulation(params) {
+      var I = [0, params.T];
+      var N = params.Nst;
+
+      var f = function (t, x) {
+        var S = x[0];
+        var I = x[1];
+        var dS = -params.alpha * S * I;
+        var dI = params.alpha * S * I - params.beta * I;
+        var dR = params.beta * I;
+        return [dS, dI, dR];
+      };
+
+      var x0 = [params.S0, params.I0, params.R0];
+      var data = JXG.Math.Numerics.rungeKutta('rk4', x0, I, N, f);
+
+      var t = [];
+      var Sarr = [];
+      var Iarr = [];
+      var Rarr = [];
+      var Narr = [];
+
+      var h = (I[1] - I[0]) / N;
+      for (var k = 0; k < data.length; k++) {
+        var tk = I[0] + k * h;
+        var Sk = data[k][0];
+        var Ik = data[k][1];
+        var Rk = data[k][2];
+        t.push(tk);
+        Sarr.push(Sk);
+        Iarr.push(Ik);
+        Rarr.push(Rk);
+        Narr.push(Sk + Ik + Rk);
+      }
+
+      return { t: t, S: Sarr, I: Iarr, R: Rarr, N: Narr };
+    }
+
+    function updateBoundingBoxes(params, simData) {
+      var N0 = params.S0 + params.I0 + params.R0;
+      if (!Number.isFinite(N0) || N0 === 0) N0 = 1;
+
+      var yMax = N0;
+      for (var i = 0; i < simData.N.length; i++) {
+        if (Number.isFinite(simData.N[i])) yMax = Math.max(yMax, simData.N[i]);
+      }
+      if (!Number.isFinite(yMax) || yMax <= 0) yMax = 1;
+      yMax = Math.max(yMax, 1.0);
+
+      var pad = 0.05 * yMax;
+      var phaseTop = Math.max(yMax + pad, 2.2);
+      var timeTop = Math.max(yMax + pad, 1.2);
+      var phaseBox = [-pad, phaseTop, yMax + pad, -pad]; // x=S, y=I
+      var timeBox = [0, timeTop, params.T, -pad];
+
+      boardPhase.setBoundingBox(phaseBox, false);
+      boardTime.setBoundingBox(timeBox, false);
+    }
+
+    function recompute() {
+      var params = readParams();
+      sim = computeSimulation(params);
+      updateBoundingBoxes(params, sim);
+    }
+
+    function init() {
+      boardPhase = JXG.JSXGraph.initBoard('jxgboxPhase', {
+        axis: true,
+        boundingbox: [-0.1, 1.1, 1.1, -0.1]
+      });
+      boardTime = JXG.JSXGraph.initBoard('jxgboxTime', {
+        axis: true,
+        boundingbox: [0, 1.1, 50, -0.1]
+      });
+      boardPhase.addChild(boardTime);
+
+      alphaSlider = boardPhase.create('slider', [[-0.05, 1.9], [0.95, 1.9], [0.0, 0.0005, 0.01]],
+        { name: '\\(\\alpha\\)', snapWidth: 0.0001, strokeColor: 'black', fillColor: 'black' });
+      betaSlider = boardPhase.create('slider', [[-0.05, 1.7], [0.95, 1.7], [0.0, 0.1, 2.0]],
+        { name: '\\(\\beta\\)', snapWidth: 0.01, strokeColor: 'black', fillColor: 'black' });
+
+      inputS0 = boardPhase.create('input', [-0.05, 1.45, '999', 'S_0=']);
+      inputI0 = boardPhase.create('input', [-0.05, 1.30, '1', 'I_0=']);
+      inputR0 = boardPhase.create('input', [-0.05, 1.15, '0', 'R_0=']);
+
+      inputT = boardPhase.create('input', [0.65, 1.45, '160', 'T=']);
+      inputNst = boardPhase.create('input', [0.65, 1.30, '4000', 'N_{st}=']);
+      inputH = boardPhase.create('input', [0.65, 1.15, '', 'h=']);
+
+      btnSim = boardPhase.create("button", [-0.05, 0.9, "simulate", function () { plot(); }], { fixed: true });
+
+      curvePhase = boardPhase.create('curve', [[], []], { strokeWidth: 3, strokeColor: JXG.palette.red });
+      curvePhase.updateDataArray = function () {
+        this.dataX = [];
+        this.dataY = [];
+        for (var i = 0; i < sim.S.length; i++) {
+          this.dataX[i] = sim.S[i];
+          this.dataY[i] = sim.I[i];
+        }
+      };
+
+      boardPhase.create('text', [-0.05, 0.65, 'Phase space: (S(t), I(t))'], { fixed: true });
+      boardTime.create('text', [0.5, 0.95, 'Time series: S(t), I(t), R(t), N(t)'], { fixed: true });
+
+      curveS = boardTime.create('curve', [[], []], { strokeWidth: 2, strokeColor: '#1f77b4' });
+      curveS.updateDataArray = function () {
+        this.dataX = [];
+        this.dataY = [];
+        for (var i = 0; i < sim.t.length; i++) {
+          this.dataX[i] = sim.t[i];
+          this.dataY[i] = sim.S[i];
+        }
+      };
+      curveI = boardTime.create('curve', [[], []], { strokeWidth: 2, strokeColor: '#d62728' });
+      curveI.updateDataArray = function () {
+        this.dataX = [];
+        this.dataY = [];
+        for (var i = 0; i < sim.t.length; i++) {
+          this.dataX[i] = sim.t[i];
+          this.dataY[i] = sim.I[i];
+        }
+      };
+      curveR = boardTime.create('curve', [[], []], { strokeWidth: 2, strokeColor: '#2ca02c' });
+      curveR.updateDataArray = function () {
+        this.dataX = [];
+        this.dataY = [];
+        for (var i = 0; i < sim.t.length; i++) {
+          this.dataX[i] = sim.t[i];
+          this.dataY[i] = sim.R[i];
+        }
+      };
+      curveN = boardTime.create('curve', [[], []], { strokeWidth: 2, dash: 2, strokeColor: '#111111' });
+      curveN.updateDataArray = function () {
+        this.dataX = [];
+        this.dataY = [];
+        for (var i = 0; i < sim.t.length; i++) {
+          this.dataX[i] = sim.t[i];
+          this.dataY[i] = sim.N[i];
+        }
+      };
+
+      function wireAutoSim(obj) {
+        if (obj && typeof obj.on === 'function') obj.on('drag', function () { plot(); });
+      }
+      wireAutoSim(alphaSlider);
+      wireAutoSim(betaSlider);
+
+      [inputS0, inputI0, inputR0, inputT, inputNst, inputH].forEach(function (inp) {
+        if (inp && inp.rendNodeInput) {
+          inp.rendNodeInput.addEventListener('change', function () { plot(); });
+        }
+      });
+    }
+
+    function plot() {
+      recompute();
+      boardPhase.update();
+      boardTime.update();
+    }
+
+    init();
+    plot();
+  </script>
+</body>
+
+<footer>Wigand Rathmann, FAU</footer>
+
+</html>
