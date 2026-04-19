@@ -75,7 +75,7 @@
 <body>
   <h1>SIR Epidemic Model</h1>
   <p>
-    We visualize the SIR system
+    Consider the SIR system
     \[
     \begin{aligned}
     S'(t) &= -\alpha\,S(t)\,I(t),\\
@@ -83,7 +83,15 @@
     R'(t) &= \beta\,I(t),
     \end{aligned}
     \]
-    and additionally \(N(t):=S(t)+I(t)+R(t)\).
+    where \(S(t)\) denotes the number of susceptible individuals, \(I(t)\) the number of infectious individuals,
+    and \(R(t)\) the number of recovered (or removed) individuals at time \(t\).
+    We also display \(N(t):=S(t)+I(t)+R(t)\), which should stay (approximately) constant.
+  </p>
+  <p>
+    Parameters: \(\alpha\ge 0\) is the infection rate (mass action), and \(\beta\ge 0\) is the recovery rate.
+    Initial values: \(S_0=S(0)\), \(I_0=I(0)\), \(R_0=R(0)\) (absolute counts).
+    Simulation settings: final time \(T\), number of time steps \(N_{st}\), and step size \(h=T/N_{st}\).
+    The widget keeps these values consistent: changing \(T\) or \(N_{st}\) updates \(h\); changing \(h\) adapts \(N_{st}\).
   </p>
 
   <div class="sir-grid">
