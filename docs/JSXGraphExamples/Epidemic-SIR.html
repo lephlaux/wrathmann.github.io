@@ -245,15 +245,30 @@
       if (!Number.isFinite(yMax) || yMax <= 0) yMax = 1;
       yMax = Math.max(yMax, 1.0);
 
-      var pad = 0.06 * yMax;
-      var timeTop = yMax + pad;
-      var padT = Math.max(0.02 * params.T, 1e-6);
-      var timeBox = [-padT, yMax + pad, params.T + padT, -pad];
+      var labelPadPx = 40; // space for axis labels in pixels
+      var timeW = (boardTime && boardTime.containerObj) ? boardTime.containerObj.clientWidth : 700;
+      var timeH = (boardTime && boardTime.containerObj) ? boardTime.containerObj.clientHeight : 600;
+      timeW = Math.max(1, timeW);
+      timeH = Math.max(1, timeH);
+
+      var padT = (labelPadPx * params.T) / timeW;
+      var padY = (labelPadPx * yMax) / timeH;
+      // Keep padding small enough to avoid negative tick labels in typical ranges.
+      padT = Math.max(padT, 1e-6);
+      padY = Math.max(padY, 1e-6);
+      var timeBox = [-padT, yMax + padY, params.T + padT, -padY];
 
       // Requirement: phase plot axes from 0 to max(N(t))
-      // Add a small padding so tick labels stay visible without zooming (keeps 0..max(N) in view).
-      var padPhase = Math.max(0.02 * yMax, 1e-6);
-      var phaseBox = [-padPhase, yMax + padPhase, yMax + padPhase, -padPhase]; // x=S, y=I
+      // Add padding (in coordinate units) derived from pixel padding to keep labels visible.
+      var phaseW = (boardPhase && boardPhase.containerObj) ? boardPhase.containerObj.clientWidth : 600;
+      var phaseH = (boardPhase && boardPhase.containerObj) ? boardPhase.containerObj.clientHeight : 600;
+      phaseW = Math.max(1, phaseW);
+      phaseH = Math.max(1, phaseH);
+      var padPhaseX = (labelPadPx * yMax) / phaseW;
+      var padPhaseY = (labelPadPx * yMax) / phaseH;
+      padPhaseX = Math.max(padPhaseX, 1e-6);
+      padPhaseY = Math.max(padPhaseY, 1e-6);
+      var phaseBox = [-padPhaseX, yMax + padPhaseY, yMax + padPhaseX, -padPhaseY]; // x=S, y=I
 
       boardPhase.setBoundingBox(phaseBox, false);
       boardTime.setBoundingBox(timeBox, false);
