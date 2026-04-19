@@ -254,18 +254,11 @@
 
       var pad = 0.05 * yMax;
 
-      var iMax = 0;
-      for (var k = 0; k < simData.I.length; k++) {
-        if (Number.isFinite(simData.I[k])) iMax = Math.max(iMax, simData.I[k]);
-      }
-      if (!Number.isFinite(iMax) || iMax <= 0) iMax = Math.max(1.0, 0.1 * yMax);
-
       var timeTop = yMax + pad;
       var timeBox = [0, timeTop, params.T, -pad];
 
-      var phasePadX = Math.max(1, 0.03 * yMax);
-      var phasePadY = Math.max(1, 0.05 * iMax);
-      var phaseBox = [-phasePadX, iMax + phasePadY, yMax + phasePadX, -phasePadY]; // x=S, y=I
+      // Requirement: phase plot axes from 0 to max(N(t))
+      var phaseBox = [0, yMax, yMax, 0]; // x=S, y=I
 
       boardPhase.setBoundingBox(phaseBox, false);
       boardTime.setBoundingBox(timeBox, false);
@@ -284,7 +277,7 @@
 
       boardPhase = JXG.JSXGraph.initBoard('jxgboxPhase', {
         axis: true,
-        boundingbox: [-1, 10, 10, -1]
+        boundingbox: [0, 10, 10, 0]
       });
 
       boardTime.create('text', [function () { return [0.02 * boardTime.getBoundingBox()[2], 0.95 * boardTime.getBoundingBox()[1]]; }, 'Time series: S(t), I(t), R(t), N(t)'], { fixed: true });
