@@ -91,7 +91,7 @@
     Parameters: \(\alpha\ge 0\) is the infection rate (mass action), and \(\beta\ge 0\) is the recovery rate.
     Initial values: \(S_0=S(0)\), \(I_0=I(0)\), \(R_0=R(0)\) (absolute counts).
     Simulation settings: final time \(T\), number of time steps \(N_{st}\), and step size \(h=T/N_{st}\).
-    The widget keeps these values consistent: changing \(T\) or \(N_{st}\) updates \(h\); changing \(h\) adapts \(N_{st}\).
+    The widget recomputes \(h\) automatically from \(T\) and \(N_{st}\).
   </p>
 
   <div class="sir-grid">
@@ -134,13 +134,8 @@
       </div>
       <div class="sir-row">
         <label for="NstInput">Nₛₜ</label>
-        <input id="NstRange" type="range" min="10" max="20000" step="10" value="4000">
+        <input id="NstRange" type="range" min="10" max="10000" step="10" value="4000">
         <output id="NstVal"></output>
-      </div>
-      <div class="sir-row">
-        <label for="hLogRange">h</label>
-        <input id="hLogRange" type="range" min="-6" max="2" step="0.01" value="-1">
-        <output id="hVal"></output>
       </div>
 
       <div class="sir-small" id="infoText"></div>
@@ -161,9 +156,8 @@
     var boardPhase, boardTime;
     var alphaRange, betaRange;
     var S0Range, I0Range, R0Range;
-    var TRange, NstRange, hLogRange;
-    var alphaVal, betaVal, S0Val, I0Val, R0Val, TVal, NstVal, hVal, infoText;
-    var lastStepControl = 'Nst';
+    var TRange, NstRange;
+    var alphaVal, betaVal, S0Val, I0Val, R0Val, TVal, NstVal, infoText;
 
     var curvePhase, curveS, curveI, curveR, curveN;
     var sim = { t: [], S: [], I: [], R: [], N: [] };
@@ -195,18 +189,10 @@
 
       var Nst = parseIntNumber(NstRange.value, 4000);
       if (Nst < 10) Nst = 10;
-
-      var hWanted = Math.pow(10, parseNumber(hLogRange.value, Math.log10(T / Nst)));
-      if (!Number.isFinite(hWanted) || hWanted <= 0) hWanted = T / Nst;
-
-      if (lastStepControl === 'h') {
-        Nst = Math.max(10, Math.round(T / hWanted));
-        Nst = Math.min(Nst, parseIntNumber(NstRange.max, 20000));
-        NstRange.value = String(Nst);
-      }
+      Nst = Math.min(Nst, parseIntNumber(NstRange.max, 10000));
+      NstRange.value = String(Nst);
 
       var h = T / Nst;
-      hLogRange.value = String(Math.log10(h));
 
       return { alpha: alpha, beta: beta, S0: S0, I0: I0, R0: R0, T: T, Nst: Nst, h: h };
     }
@@ -354,7 +340,6 @@
       R0Val.value = String(Math.round(params.R0));
       TVal.value = String(Math.round(params.T));
       NstVal.value = String(Math.round(params.Nst));
-      hVal.value = Number(params.h).toPrecision(6);
     }
 
     function plot() {
@@ -373,9 +358,8 @@
       I0Range.addEventListener('input', function () { plot(); });
       R0Range.addEventListener('input', function () { plot(); });
 
-      TRange.addEventListener('input', function () { lastStepControl = 'T'; plot(); });
-      NstRange.addEventListener('input', function () { lastStepControl = 'Nst'; plot(); });
-      hLogRange.addEventListener('input', function () { lastStepControl = 'h'; plot(); });
+      TRange.addEventListener('input', function () { plot(); });
+      NstRange.addEventListener('input', function () { plot(); });
     }
 
     function initControls() {
@@ -386,7 +370,6 @@
       R0Range = document.getElementById('R0Range');
       TRange = document.getElementById('TRange');
       NstRange = document.getElementById('NstRange');
-      hLogRange = document.getElementById('hLogRange');
 
       alphaVal = document.getElementById('alphaVal');
       betaVal = document.getElementById('betaVal');
@@ -395,7 +378,6 @@
       R0Val = document.getElementById('R0Val');
       TVal = document.getElementById('TVal');
       NstVal = document.getElementById('NstVal');
-      hVal = document.getElementById('hVal');
       infoText = document.getElementById('infoText');
     }
 
