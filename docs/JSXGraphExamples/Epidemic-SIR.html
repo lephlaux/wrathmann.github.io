@@ -245,13 +245,15 @@
       if (!Number.isFinite(yMax) || yMax <= 0) yMax = 1;
       yMax = Math.max(yMax, 1.0);
 
-      var pad = 0.05 * yMax;
-
+      var pad = 0.06 * yMax;
       var timeTop = yMax + pad;
-      var timeBox = [0, timeTop, params.T, -pad];
+      var padT = Math.max(0.02 * params.T, 1e-6);
+      var timeBox = [-padT, yMax + pad, params.T + padT, -pad];
 
       // Requirement: phase plot axes from 0 to max(N(t))
-      var phaseBox = [0, yMax, yMax, 0]; // x=S, y=I
+      // Add a small padding so tick labels stay visible without zooming (keeps 0..max(N) in view).
+      var padPhase = Math.max(0.02 * yMax, 1e-6);
+      var phaseBox = [-padPhase, yMax + padPhase, yMax + padPhase, -padPhase]; // x=S, y=I
 
       boardPhase.setBoundingBox(phaseBox, false);
       boardTime.setBoundingBox(timeBox, false);
