@@ -13,6 +13,61 @@
     body {
       font-family: sans-serif;
     }
+
+    .sir-grid {
+      display: grid;
+      grid-template-columns: minmax(260px, 320px) 1fr 1fr;
+      gap: 16px;
+      align-items: start;
+    }
+
+    /* Prevent grid columns from expanding due to large min-content widths inside JSXGraph containers */
+    .sir-grid>* {
+      min-width: 0;
+    }
+
+    .sir-panel {
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 12px;
+      background: #fafafa;
+    }
+
+    .sir-panel h2 {
+      font-size: 16px;
+      margin: 0 0 10px 0;
+    }
+
+    .sir-row {
+      display: grid;
+      grid-template-columns: 90px 1fr;
+      gap: 8px;
+      align-items: center;
+      margin: 8px 0;
+    }
+
+    .sir-row input[type="number"] {
+      width: 100%;
+      padding: 4px 6px;
+      box-sizing: border-box;
+    }
+
+    .sir-row input[type="range"] {
+      width: 100%;
+    }
+
+    .sir-small {
+      font-size: 12px;
+      color: #444;
+      line-height: 1.4;
+      margin-top: 10px;
+    }
+
+    .sir-plot {
+      width: 100%;
+      height: 600px;
+      overflow: hidden;
+    }
   </style>
 
   <title>SIR Epidemic Model</title>
@@ -32,18 +87,71 @@
     and additionally \(N(t):=S(t)+I(t)+R(t)\).
   </p>
 
-  <div id="jxgboxPhase" class="jxgbox" style="width:600px; height:600px; float:left"></div>
-  <div id="jxgboxTime" class="jxgbox" style="width:700px; height:600px;"></div>
-  <br clear="all">
+  <div class="sir-grid">
+    <div class="sir-panel">
+      <h2>Parameters</h2>
+
+      <div class="sir-row">
+        <label for="alphaRange">α</label>
+        <input id="alphaRange" type="range" min="0" max="0.01" step="0.0001" value="0.0005">
+      </div>
+      <div class="sir-row">
+        <label for="betaRange">β</label>
+        <input id="betaRange" type="range" min="0" max="2" step="0.01" value="0.10">
+      </div>
+
+      <h2 style="margin-top:14px;">Initial values</h2>
+      <div class="sir-row">
+        <label for="S0Input">S₀</label>
+        <input id="S0Input" type="number" min="0" step="1" value="999">
+      </div>
+      <div class="sir-row">
+        <label for="I0Input">I₀</label>
+        <input id="I0Input" type="number" min="0" step="1" value="1">
+      </div>
+      <div class="sir-row">
+        <label for="R0Input">R₀</label>
+        <input id="R0Input" type="number" min="0" step="1" value="0">
+      </div>
+
+      <h2 style="margin-top:14px;">Simulation</h2>
+      <div class="sir-row">
+        <label for="TInput">T</label>
+        <input id="TInput" type="number" min="0.001" step="1" value="160">
+      </div>
+      <div class="sir-row">
+        <label for="NstInput">Nₛₜ</label>
+        <input id="NstInput" type="number" min="10" step="10" value="4000">
+      </div>
+      <div class="sir-row">
+        <label for="hInput">h</label>
+        <input id="hInput" type="number" min="0.000001" step="0.001" value="">
+      </div>
+      <div class="sir-row">
+        <span></span>
+        <button id="simulateBtn" type="button">Simulate</button>
+      </div>
+
+      <div class="sir-small" id="infoText"></div>
+    </div>
+
+    <div>
+      <div id="jxgboxTime" class="jxgbox sir-plot"></div>
+    </div>
+
+    <div>
+      <div id="jxgboxPhase" class="jxgbox sir-plot"></div>
+    </div>
+  </div>
 
   <script language="JavaScript">
     JXG.Options.text.useMathJax = true;
 
     var boardPhase, boardTime;
-    var alphaSlider, betaSlider;
-    var inputS0, inputI0, inputR0;
-    var inputT, inputNst, inputH;
-    var btnSim;
+    var alphaRange, betaRange;
+    var S0Input, I0Input, R0Input;
+    var TInput, NstInput, hInput;
+    var simulateBtn, infoText;
 
     var curvePhase, curveS, curveI, curveR, curveN;
     var sim = { t: [], S: [], I: [], R: [], N: [] };
@@ -58,38 +166,32 @@
       return Number.isFinite(n) ? n : fallback;
     }
 
-    function setInputValue(inputEl, value) {
-      if (inputEl && inputEl.rendNodeInput) {
-        inputEl.rendNodeInput.value = String(value);
-      }
-    }
-
     function readParams() {
-      var alpha = alphaSlider.Value();
-      var beta = betaSlider.Value();
+      var alpha = parseNumber(alphaRange.value, 0.0005);
+      var beta = parseNumber(betaRange.value, 0.1);
 
-      var S0 = parseNumber(inputS0.Value(), 999);
-      var I0 = parseNumber(inputI0.Value(), 1);
-      var R0 = parseNumber(inputR0.Value(), 0);
+      var S0 = parseNumber(S0Input.value, 999);
+      var I0 = parseNumber(I0Input.value, 1);
+      var R0 = parseNumber(R0Input.value, 0);
 
       if (S0 < 0) S0 = 0;
       if (I0 < 0) I0 = 0;
       if (R0 < 0) R0 = 0;
 
-      var T = parseNumber(inputT.Value(), 160);
+      var T = parseNumber(TInput.value, 160);
       if (T <= 0) T = 160;
 
-      var Nst = parseIntNumber(inputNst.Value(), 4000);
+      var Nst = parseIntNumber(NstInput.value, 4000);
       if (Nst < 10) Nst = 10;
 
-      var hUser = parseNumber(inputH.Value(), NaN);
+      var hUser = parseNumber(hInput.value, NaN);
       if (Number.isFinite(hUser) && hUser > 0) {
         Nst = Math.max(10, Math.round(T / hUser));
-        setInputValue(inputNst, Nst);
+        NstInput.value = String(Nst);
       }
 
       var h = T / Nst;
-      setInputValue(inputH, h.toPrecision(6));
+      hInput.value = String(Number(h.toPrecision(6)));
 
       return { alpha: alpha, beta: beta, S0: S0, I0: I0, R0: R0, T: T, Nst: Nst, h: h };
     }
@@ -144,46 +246,42 @@
       yMax = Math.max(yMax, 1.0);
 
       var pad = 0.05 * yMax;
-      var phaseTop = Math.max(yMax + pad, 2.2);
-      var timeTop = Math.max(yMax + pad, 1.2);
-      var phaseBox = [-pad, phaseTop, yMax + pad, -pad]; // x=S, y=I
+
+      var iMax = 0;
+      for (var k = 0; k < simData.I.length; k++) {
+        if (Number.isFinite(simData.I[k])) iMax = Math.max(iMax, simData.I[k]);
+      }
+      if (!Number.isFinite(iMax) || iMax <= 0) iMax = Math.max(1.0, 0.1 * yMax);
+
+      var timeTop = yMax + pad;
       var timeBox = [0, timeTop, params.T, -pad];
+
+      var phasePadX = Math.max(1, 0.03 * yMax);
+      var phasePadY = Math.max(1, 0.05 * iMax);
+      var phaseBox = [-phasePadX, iMax + phasePadY, yMax + phasePadX, -phasePadY]; // x=S, y=I
 
       boardPhase.setBoundingBox(phaseBox, false);
       boardTime.setBoundingBox(timeBox, false);
     }
 
-    function recompute() {
-      var params = readParams();
+    function recompute(params) {
       sim = computeSimulation(params);
       updateBoundingBoxes(params, sim);
     }
 
     function init() {
-      boardPhase = JXG.JSXGraph.initBoard('jxgboxPhase', {
-        axis: true,
-        boundingbox: [-0.1, 1.1, 1.1, -0.1]
-      });
       boardTime = JXG.JSXGraph.initBoard('jxgboxTime', {
         axis: true,
         boundingbox: [0, 1.1, 50, -0.1]
       });
-      boardPhase.addChild(boardTime);
 
-      alphaSlider = boardPhase.create('slider', [[-0.05, 1.9], [0.95, 1.9], [0.0, 0.0005, 0.01]],
-        { name: '\\(\\alpha\\)', snapWidth: 0.0001, strokeColor: 'black', fillColor: 'black' });
-      betaSlider = boardPhase.create('slider', [[-0.05, 1.7], [0.95, 1.7], [0.0, 0.1, 2.0]],
-        { name: '\\(\\beta\\)', snapWidth: 0.01, strokeColor: 'black', fillColor: 'black' });
+      boardPhase = JXG.JSXGraph.initBoard('jxgboxPhase', {
+        axis: true,
+        boundingbox: [-1, 10, 10, -1]
+      });
 
-      inputS0 = boardPhase.create('input', [-0.05, 1.45, '999', 'S_0=']);
-      inputI0 = boardPhase.create('input', [-0.05, 1.30, '1', 'I_0=']);
-      inputR0 = boardPhase.create('input', [-0.05, 1.15, '0', 'R_0=']);
-
-      inputT = boardPhase.create('input', [0.65, 1.45, '160', 'T=']);
-      inputNst = boardPhase.create('input', [0.65, 1.30, '4000', 'N_{st}=']);
-      inputH = boardPhase.create('input', [0.65, 1.15, '', 'h=']);
-
-      btnSim = boardPhase.create("button", [-0.05, 0.9, "simulate", function () { plot(); }], { fixed: true });
+      boardTime.create('text', [function () { return [0.02 * boardTime.getBoundingBox()[2], 0.95 * boardTime.getBoundingBox()[1]]; }, 'Time series: S(t), I(t), R(t), N(t)'], { fixed: true });
+      boardPhase.create('text', [function () { return [0.02 * boardPhase.getBoundingBox()[2], 0.95 * boardPhase.getBoundingBox()[1]]; }, 'Phase space: (S(t), I(t))'], { fixed: true });
 
       curvePhase = boardPhase.create('curve', [[], []], { strokeWidth: 3, strokeColor: JXG.palette.red });
       curvePhase.updateDataArray = function () {
@@ -194,9 +292,6 @@
           this.dataY[i] = sim.I[i];
         }
       };
-
-      boardPhase.create('text', [-0.05, 0.65, 'Phase space: (S(t), I(t))'], { fixed: true });
-      boardTime.create('text', [0.5, 0.95, 'Time series: S(t), I(t), R(t), N(t)'], { fixed: true });
 
       curveS = boardTime.create('curve', [[], []], { strokeWidth: 2, strokeColor: '#1f77b4' });
       curveS.updateDataArray = function () {
@@ -234,27 +329,51 @@
           this.dataY[i] = sim.N[i];
         }
       };
+    }
 
-      function wireAutoSim(obj) {
-        if (obj && typeof obj.on === 'function') obj.on('drag', function () { plot(); });
-      }
-      wireAutoSim(alphaSlider);
-      wireAutoSim(betaSlider);
-
-      [inputS0, inputI0, inputR0, inputT, inputNst, inputH].forEach(function (inp) {
-        if (inp && inp.rendNodeInput) {
-          inp.rendNodeInput.addEventListener('change', function () { plot(); });
-        }
-      });
+    function updateInfo(params) {
+      var N0 = params.S0 + params.I0 + params.R0;
+      var r0 = (params.beta > 0) ? (params.alpha * N0 / params.beta) : Infinity;
+      var r0Text = Number.isFinite(r0) ? r0.toFixed(3) : '∞';
+      infoText.textContent = 'N0=' + N0.toFixed(3) + ', h=' + params.h.toPrecision(6) + ', R0≈α·N0/β=' + r0Text + ' (absolute counts)';
     }
 
     function plot() {
-      recompute();
+      var params = readParams();
+      recompute(params);
+      updateInfo(params);
       boardPhase.update();
       boardTime.update();
     }
 
+    function wireControls() {
+      alphaRange.addEventListener('input', function () { plot(); });
+      betaRange.addEventListener('input', function () { plot(); });
+      [S0Input, I0Input, R0Input, TInput, NstInput].forEach(function (el) {
+        el.addEventListener('change', function () { plot(); });
+      });
+
+      // If h is changed, recompute Nst from T/h. Use change (not input) to avoid jitter while typing.
+      hInput.addEventListener('change', function () { plot(); });
+      simulateBtn.addEventListener('click', function () { plot(); });
+    }
+
+    function initControls() {
+      alphaRange = document.getElementById('alphaRange');
+      betaRange = document.getElementById('betaRange');
+      S0Input = document.getElementById('S0Input');
+      I0Input = document.getElementById('I0Input');
+      R0Input = document.getElementById('R0Input');
+      TInput = document.getElementById('TInput');
+      NstInput = document.getElementById('NstInput');
+      hInput = document.getElementById('hInput');
+      simulateBtn = document.getElementById('simulateBtn');
+      infoText = document.getElementById('infoText');
+    }
+
+    initControls();
     init();
+    wireControls();
     plot();
   </script>
 </body>
