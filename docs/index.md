@@ -63,7 +63,7 @@ In the following examples one can highlight probalities $P(a<=X<=b)$.
 ### System of ODEs
 - [Show 2D vectorfields](./JSXGraphExamples/Vektorfelder-anzeigen-input.html) In this applet the vectorfield can be edited via input fields.
 - [Lotka-Voltera](./JSXGraphExamples/vectorfield-Lotka.html) 
-- [SIR epidemic model](./JSXGraphExamples/Epidemic-SIR.html) Sliders for \(\alpha,\beta\), inputs for \(S_0,I_0,R_0\), and time/steps.
+- [Epidemic model (SIR)](./JSXGraphExamples/Epidemic-SIR.html)
 - [2x2 System over time](./JSXGraphExamples/ODE-System2x2-time.html)
 - [2x2 System tracectory](./JSXGraphExamples/ODE-System2x2-portrait.html)
 - [2x2 System tracectory ODE (Euler, Heun, RK4)](./JSXGraphExamples/ODESystem-Solver.html)
