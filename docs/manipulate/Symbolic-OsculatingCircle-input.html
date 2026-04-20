@@ -45,17 +45,17 @@
     var f, graph, g, Df, D2fc, p1, tangentf, m1, c1, c, inputf;
     var strf, strDf, strD2f;
     var circleList = [];
+    var lastValidFx = null;
+
+    function debounce(fn, waitMs) {
+      var t;
+      return function () {
+        if (t) clearTimeout(t);
+        t = setTimeout(fn, waitMs);
+      };
+    }
+
     var inputfx = b1.create('input', [-3.1, 4.5, '1/8*((x-2)*(x+2))^2', 'f(x)=']);
-    var bplot = b1.create(
-      "button",
-      [
-        -3.1,
-        4.0,
-        "set function",
-        function () { plot() },
-      ],
-      { fixed: true }
-    );
 
     // toggle buttons
     bTangent = b1.create(
@@ -87,22 +87,37 @@
     // create list to toggle osculating circle
 
     function plot() {
-      b1.removeObject([c1, m1, tangentf, p1, c, graph]); 
+      b1.removeObject([c1, m1, tangentf, c, graph]);
+      circleList = [];
       
       // read strings for the functions
       strf = inputfx.Value();
-      strDf = b1.jc.manipulate("D(" + strf + ",x);");
-      strD2f = b1.jc.manipulate("D(" + strDf + ",x);");
-      f = b1.jc.snippet(strf, true, 'x');
-      Df = b1.jc.snippet(strDf, true, 'x');
-      D2f = b1.jc.snippet(strD2f, true, 'x');
+      if (strf == null || String(strf).trim() === '') {
+        if (lastValidFx != null) strf = lastValidFx;
+      }
+      try {
+        strDf = b1.jc.manipulate("D(" + strf + ",x);");
+        strD2f = b1.jc.manipulate("D(" + strDf + ",x);");
+        f = b1.jc.snippet(strf, true, 'x');
+        Df = b1.jc.snippet(strDf, true, 'x');
+        D2f = b1.jc.snippet(strD2f, true, 'x');
+        lastValidFx = strf;
+      } catch (e) {
+        if (lastValidFx == null) return;
+        strf = lastValidFx;
+        strDf = b1.jc.manipulate("D(" + strf + ",x);");
+        strD2f = b1.jc.manipulate("D(" + strDf + ",x);");
+        f = b1.jc.snippet(strf, true, 'x');
+        Df = b1.jc.snippet(strDf, true, 'x');
+        D2f = b1.jc.snippet(strD2f, true, 'x');
+      }
       graph = b1.create('functiongraph', [f]);
       c = b1.create('glider', [0, 0, graph], { name: '(x_0,f(x_0))' });
       tangentf = b1.create('tangent', [c], { color: '#aaaaff' });
       m1 = b1.create('point', [function () { a = mkreis(c.X()); return c.X() + a[0]; }, function () { a = mkreis(c.X()); return f(c.X()) + a[1]; }], { name: 'M', visible: true });
       c1 = b1.create('circle', [m1, c], { name: 'Kr&uuml;umgskreis', visible: true });
       // create list to toggle osculating circle
-      circleList.push(c1, m1);
+      circleList = [c1, m1];
     }
 
     function mkreis(t) {
@@ -138,6 +153,10 @@
       }
     }
 
+    // Update plot while typing (debounced), no extra "set function" button.
+    if (inputfx && inputfx.rendNodeInput) {
+      inputfx.rendNodeInput.addEventListener('input', debounce(plot, 250), { passive: true });
+    }
 
   </script>
   </center>

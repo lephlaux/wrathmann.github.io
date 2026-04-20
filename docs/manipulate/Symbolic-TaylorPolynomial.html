@@ -34,8 +34,17 @@
     JXG.Options.text.useMathJax = true;
     var bGraph = null, bTayPol = null;
     var ftxt, funf, graph, g, Df, x0, fdx = [], taylorpol = null, val;
+    var lastValidFx = null;
     // Taylor polynomial max degree
     var sumMax = 20;
+
+    function debounce(fn, waitMs) {
+      var t;
+      return function () {
+        if (t) clearTimeout(t);
+        t = setTimeout(fn, waitMs);
+      };
+    }
 
     // generate board
     var b1 = JXG.JSXGraph.initBoard('jxgbox', { axis: true, boundingBox: [-6, 5, 10, -3] });
@@ -47,16 +56,6 @@
       'x^4/8-x^2+2',
       //'1/8*((x-2)*(x+2))^2', 
       'f(x)='], { fixed: true, frozen: true });
-    var bplot = b1.create(
-      "button",
-      [
-        -3.1,
-        4.0,
-        "set function",
-        function () { plot() },
-      ],
-      { fixed: true, frozen: true }
-    );
 
     // toggle buttons
     bGraph = b1.create(
@@ -85,12 +84,24 @@
     // create list to toggle osculating circle
 
     function plot() {
-      b1.removeObject([graph, taylorpol]);
+      b1.removeObject([graph, x0, taylorpol]);
       // read strings for the functions
       ftxt = inputfx.Value();
+      if (ftxt == null || String(ftxt).trim() === '') {
+        if (lastValidFx != null) {
+          ftxt = lastValidFx;
+        }
+      }
       funf = [];
       fdx = [];
-      funf[0] = b1.jc.snippet(ftxt, true, 'x');
+      try {
+        funf[0] = b1.jc.snippet(ftxt, true, 'x');
+      } catch (e) {
+        if (lastValidFx == null) return;
+        ftxt = lastValidFx;
+        funf[0] = b1.jc.snippet(ftxt, true, 'x');
+      }
+      lastValidFx = ftxt;
       // generate the derivatives
       fdx[0] = ftxt;
       for (let i = 1; i <= sumMax; i++) {
@@ -130,6 +141,11 @@
           inputList[iloop].update();
         }
       }
+    }
+
+    // Update plot while typing (debounced), no extra "set function" button.
+    if (inputfx && inputfx.rendNodeInput) {
+      inputfx.rendNodeInput.addEventListener('input', debounce(plot, 250), { passive: true });
     }
   </script>
 </body>
