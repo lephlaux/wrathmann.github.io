@@ -129,7 +129,7 @@ The links will direct to the IDIAM page.
 + [Spherical coordinates](https://idiamath.github.io/JSXGraphExamples/SphericalCoordinatesWithCuttingPlane.html) One set is hard coded in the applet, now try to fit the other on. 
 
 ## Vector Fields
-+ [Slope Field](https://idiamath.github.io/JSXGraphExamples/slopefield-plot-input.html) Slopefield of a function $$f:\mathbb{R}^2\to\mathbb{R}$$ like $$y'(x)=f(x,y)$$ is plotted, a trajectory thru $$(x_0,y_0)$$ is plotted. The function can be modified by an input field.
++ [Slope Field](https://idiamath.github.io/JSXGraphExamples/slopefield-plot-input.html) Plots the slope field of $$y'(x)=f(x,y)$$ for a function $$f:\mathbb{R}^2\to\mathbb{R}$$ and a trajectory through $$(x_0,y_0)$$. The function can be modified in an input field.
 + [Vector Field 2d](https://idiamath.github.io/JSXGraphExamples/vectorfield-plot-input.html) given by a function $$V:\mathbb{R}^2\to\mathbb{R}^2$$ a trajectory thru $$(x_0,y_0)$$ is plotted. The vector field can be modified by an input field.
 + [Vector Field 3d](https://idiamath.github.io/JSXGraphExamples/vectorfield3D-plot-input.html) given by a function $$V:\mathbb{R}^3\to\mathbb{R}^3$$ a trajectory thru $$(x_0,y_0)$$ is plotted. The components of vector field can be modified by input boxes.
 + [Vector Field 3d and curl](https://idiamath.github.io/JSXGraphExamples/vectorfield3D-rot-input.html) given by a function $$V:\mathbb{R}^3\to\mathbb{R}^3$$ the curl $$\nabla\times V$$ is computed and shown. The components of vector field can be modified by input boxes.
