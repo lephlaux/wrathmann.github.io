@@ -15,12 +15,12 @@
     }
   </style>
 
-    <title>Vectorfield and Trajectory</title>
+    <title>Visualize slope field and trajectory</title>
 </head>
 
 <body>
 
-    <h1>Show vector fields</h1>
+    <h1>Visualize slope field and trajectory</h1>
     <div id="jxgbox" class="jxgbox" style="width:600px; height:600px;"></div>
     <br clear="all">
     <script language="JavaScript">
@@ -71,7 +71,7 @@ var init = function() {
   ], {
     name: 'h',snapWidth:0.05
   });
-  bFieldT = board.create('button',[-4.1,-3.7,"vector field",
+  bFieldT = board.create('button',[-4.1,-3.7,"slope field",
             function () {toggleList([field]);},
           ],
           { fixed: true }
