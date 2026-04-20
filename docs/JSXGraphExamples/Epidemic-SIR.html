@@ -2,7 +2,7 @@
 
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <script type="text/javascript" charset="UTF-8"
     src="https://cdn.jsdelivr.net/npm/jsxgraph/distrib/jsxgraphcore.js"></script>
   <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/jsxgraph/distrib/jsxgraph.css" />
@@ -69,6 +69,17 @@
     .sir-plot {
       width: 100%;
       height: 600px;
+    }
+
+    /* Mobile: stack panel + plots vertically to avoid squeezing the graphs */
+    @media (max-width: 980px) {
+      .sir-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .sir-plot {
+        height: 420px;
+      }
     }
 
     .sir-caption {
@@ -453,6 +464,29 @@
       boardTime.update();
     }
 
+    function resizeBoards() {
+      if (boardTime && boardTime.containerObj && typeof boardTime.resizeContainer === 'function') {
+        boardTime.resizeContainer(boardTime.containerObj.clientWidth, boardTime.containerObj.clientHeight);
+      }
+      if (boardPhase && boardPhase.containerObj && typeof boardPhase.resizeContainer === 'function') {
+        boardPhase.resizeContainer(boardPhase.containerObj.clientWidth, boardPhase.containerObj.clientHeight);
+      }
+      if (boardTime && boardPhase) {
+        var params = readParams();
+        updateBoundingBoxes(params, sim);
+        boardTime.update();
+        boardPhase.update();
+      }
+    }
+
+    function debounce(fn, waitMs) {
+      var t;
+      return function () {
+        if (t) clearTimeout(t);
+        t = setTimeout(fn, waitMs);
+      };
+    }
+
     function wireControls() {
       alphaRange.addEventListener('input', function () { plot(); });
       betaRange.addEventListener('input', function () { plot(); });
@@ -493,6 +527,9 @@
     init();
     wireControls();
     plot();
+
+    window.addEventListener('resize', debounce(resizeBoards, 120), { passive: true });
+    window.addEventListener('orientationchange', function () { setTimeout(resizeBoards, 250); }, { passive: true });
 
     // Typeset MathJax inside the control panel labels (MathJax is loaded async).
     (function typesetControlsWhenReady() {
