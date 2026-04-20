@@ -1,0 +1,6 @@
+# Build output (Jekyll)
+_site/
+
+# Local Codex artifacts
+.codex/
+
