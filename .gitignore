@@ -2,5 +2,5 @@
 _site/
 
 # Local Codex artifacts
+.codex
 .codex/
-
